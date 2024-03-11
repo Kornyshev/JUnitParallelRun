@@ -13,9 +13,13 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <junit.jupiter.version>5.10.1</junit.jupiter.version>
+        <junit.jupiter.version>5.10.2</junit.jupiter.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+
+        <allure-maven.version>2.10.0</allure-maven.version>
+        <allure-junit5.version>2.25.0</allure-junit5.version>
+        <aspectj.version>1.9.21.1</aspectj.version>
     </properties>
 
     <dependencies>
@@ -31,6 +35,11 @@
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-junit5</artifactId>
+            <version>${allure-junit5.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -44,15 +53,72 @@
                     <target>17</target>
                 </configuration>
             </plugin>
+
+            <!--
+            Здесь продемонстрированы корректные настройки для maven-surefire-plugin.
+            Со всеми последними версиями библиотек на момент March 11 2024.
+
+            Этот проект реализован на чистом JUnit 5 + Allure,
+            поэтому для этой интеграции выбраны соответствующие зависимости.
+            Если Вам потребуется использовать, например, Cucumber, то зависимости будут немного другими.
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M5</version>
+                <version>3.2.5</version>
                 <configuration>
+                    <systemProperties>
+                        <property>
+                            <name>allure.results.directory</name>
+                            <value>${project.basedir}/target/allure-results</value>
+                        </property>
+                    </systemProperties>
+                    <argLine>
+                        -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
+                    </argLine>
                     <testFailureIgnore>true</testFailureIgnore>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjweaver</artifactId>
+                        <version>${aspectj.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <!--
+    Reporting блок предназначен для генерации Allure Report.
+    Генерация выполняется командой mvn site (может быть частью mvn clean test site).
+
+    Чтобы site отработала нужны корректно сгенерированные файлы по итогам работы Allure в ходе запуска тестов.
+    Сырые файлы для генерации отчёта складываются в target/allure-results -
+        это конфигурируется в плагине maven-surefire-plugin.
+
+    Команду site нужно выполнять, если вам нужен буквально весь репорт и вы можете его куда-то опубликовать.
+    Там есть index.html файл, поэтому он может стать публично доступен по ссылку на Web-сервере -
+        например, если требуется демонстрировать отчёт менеджменту
+        и у вас есть возможность развернуть его на внутренних серверах.
+
+    Но, например, при запуске тестов в Jenkins генерировать отчёт не обязательно.
+    Достаточно подключит плагин Allure в Jenkins и указать ему на папку с сырыми данными после тестов.
+    Allure плагин нужно будет включить в свои джобы/пайплайны и он сгенерирует всё сам и опубликует тут же со ссылкой.
+    -->
+    <reporting>
+        <excludeDefaults>true</excludeDefaults>
+        <plugins>
+            <plugin>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-maven</artifactId>
+                <version>${allure-maven.version}</version>
+                <configuration>
+                    <reportVersion>${allure-junit5.version}</reportVersion>
                 </configuration>
             </plugin>
         </plugins>
-    </build>
+    </reporting>
 
 </project>

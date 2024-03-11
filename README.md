@@ -32,3 +32,12 @@ The console log from test executions demonstrates parallel execution behavior. I
 
 This log effectively illustrates the parallel and concurrent execution capabilities of JUnit 5 under the configured settings.
 
+## JUnit 5 + Allure integration
+
+- In this project, Allure Report is implemented as a powerful tool for test reporting and analysis. It is integrated using the `allure-junit5` dependency, which allows Allure to work seamlessly with JUnit 5 tests. To generate the Allure reports, test results are collected in the `target/allure-results` directory, as configured in the `maven-surefire-plugin`. This configuration ensures that all necessary data for report generation is available after test execution.
+
+- To generate a full-fledged Allure report, the command `mvn site` can be used, which may be a part of the complete Maven lifecycle like `mvn clean test site`. This process compiles the raw data from `target/allure-results` into a comprehensive report. The `mvn site` command is especially useful when you need to publish the entire report, possibly on an internal server for demonstration to management or other stakeholders.
+
+- However, for continuous integration environments like Jenkins, it's not mandatory to generate the full report during the build process. Instead, the Allure plugin in Jenkins can be configured to point to the raw data folder. This plugin will then automatically generate and publish the Allure report within Jenkins, providing convenient access to the results with a link.
+
+- This setup, as evident from the project's `pom.xml` file, shows a clean and efficient integration of Allure with JUnit 5, leveraging Maven's capabilities to handle dependencies and plugins, thereby simplifying the process of test execution and reporting.
